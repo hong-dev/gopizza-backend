@@ -1,5 +1,7 @@
-from store.models import Store
-from django.db    import models
+from store.models           import Store
+
+from django.db              import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class User(models.Model):
     grade        = models.ForeignKey('Grade', on_delete = models.SET_NULL, null = True)
@@ -24,7 +26,10 @@ class Grade(models.Model):
 
 class Feedback(models.Model):
     user  = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
-    score = models.IntegerField(validators = [MaxValueValidator(10), MinValueValidator(1)], null = True)
+    score = models.IntegerField(
+        validators = [MaxValueValidator(10), MinValueValidator(1)], null = True
+    )
+
 
     class Meta:
         db_table = 'feedbacks'
