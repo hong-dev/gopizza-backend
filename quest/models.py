@@ -9,6 +9,7 @@ class Category(models.Model):
 
 class Quest(models.Model):
     category    = models.ForeignKey(Category, on_delete = models.SET_NULL, null = True)
+    user        = models.ManyToManyField(User, through = 'UserQuestHistory', null = True)
     name        = models.CharField(max_length = 50, null = True)
     goal        = models.IntegerField(null = True)
     description = models.CharField(max_length = 500, null = True)
