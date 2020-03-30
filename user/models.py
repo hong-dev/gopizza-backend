@@ -32,11 +32,11 @@ class Feedback(models.Model):
     class Meta:
         db_table = 'feedbacks'
 
-class Varification(models.Model):
+class Verification(models.Model):
     email        = models.CharField(max_length = 100)
     is_activated = models.BooleanField(null = True)
     created_at   = models.DateTimeField(auto_now_add = True)
     updated_at   = models.DateTimeField(auto_now = True)
 
     class Meta:
-        db_table = 'varifications'
+        db_table = 'verifications'
