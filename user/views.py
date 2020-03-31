@@ -98,3 +98,20 @@ class SignInView(View):
 
         except  KeyError:
             return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
+
+class UserListView(View):
+    def get(self, request):
+        users = [{
+            store : list(
+                User
+                .objects
+                .filter(store_id = store)
+                .values_list('id', flat = True)
+            )
+        } for store in list(
+            Store
+            .objects
+            .values_list('id', flat = True)
+        )]
+
+        return JsonResponse({"users" : users}, status = 200)

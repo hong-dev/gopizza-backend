@@ -1,4 +1,10 @@
-from .views import SignUpView, SignInView, EmailVerificationView
+from .views import (
+    SignUpView,
+    SignInView,
+    EmailVerificationView,
+    UserListView,
+)
+
 
 from django.urls import path
 
@@ -7,4 +13,5 @@ urlpatterns = [
     path('/sign-in', SignInView.as_view()),
     path('/email-verification', EmailVerificationView.as_view()),
     path('/email-verification/<str:uidb64>/<str:token>', EmailVerificationView.as_view()),
+    path('', UserListView.as_view()),
 ]
