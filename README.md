@@ -1,4 +1,4 @@
 # wepizza-backend
 
 ## Database Modeling
-![image](https://user-images.githubusercontent.com/53142539/77985750-3ca14000-7350-11ea-9e1b-ecbc188e88a1.png)
+![image](https://user-images.githubusercontent.com/53142539/78035803-8b78c500-73a4-11ea-94f7-815e8ae4fc1b.png)
