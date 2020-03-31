@@ -8,8 +8,11 @@ class StoreListView(View):
         stores = Store.objects.values()
         store_list = [
             {
-                "id"   : store['id'],
-                "name" : store['name']
+                "id"        : store['id'],
+                "name"      : store['name'],
+                "address"   : store['address'],
+                "latitude"  : store['latitude'],
+                "longitude" : store['longitude']
             } for store in stores ]
 
         return JsonResponse({"store_list" : store_list}, status = 200)
