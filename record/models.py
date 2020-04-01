@@ -1,4 +1,5 @@
-from user.models import User
+from user.models  import User
+from store.models import Store
 
 from django.db              import models
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -12,6 +13,7 @@ class Pizza(models.Model):
 class Score(models.Model):
     user         = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
     pizza        = models.ForeignKey('Pizza', on_delete = models.SET_NULL, null = True)
+    store        = models.ForeignKey(Store, on_delete = models.SET_NULL, null = True)
     order_number = models.CharField(max_length = 200, null = True)
     time         = models.IntegerField(null = True)
     quality      = models.IntegerField(validators = [MaxValueValidator(100), MinValueValidator(0)], null = True)
