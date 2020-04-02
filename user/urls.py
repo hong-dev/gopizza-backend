@@ -3,6 +3,7 @@ from .views import (
     SignInView,
     EmailVerificationView,
     UserListView,
+    ProfileUploadView,
 )
 
 
@@ -14,4 +15,5 @@ urlpatterns = [
     path('/email-verification', EmailVerificationView.as_view()),
     path('/email-verification/<str:uidb64>/<str:token>', EmailVerificationView.as_view()),
     path('', UserListView.as_view()),
+    path('/profile-upload', ProfileUploadView.as_view()),
 ]
