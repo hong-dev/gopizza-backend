@@ -1,10 +1,12 @@
 import json
 import bcrypt
 import jwt
+import boto3
+import uuid
 
 from .models      import User, Grade, Verification
 from store.models import Store
-from my_settings  import SECRET, ALGORITHM, EMAIL
+from my_settings  import SECRET, ALGORITHM, EMAIL, S3
 from .texts       import message
 from .tokens      import account_activation_token
 
@@ -115,3 +117,28 @@ class UserListView(View):
         )]
 
         return JsonResponse({"users" : users}, status = 200)
+
+class ProfileUploadView(View):
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id = S3['Access_Key_ID'],
+        aws_secret_access_key = S3['Secret_Access_Key']
+    )
+    def post(self, request):
+        try:
+            file = request.FILES['filename']
+            url_generator = str(uuid.uuid4())
+            self.s3_client.upload_fileobj(
+                file,
+                "wepizza",
+                url_generator,
+                ExtraArgs = {
+                    "ContentType" : file.content_type
+                }
+            )
+            image_url =f'{S3["Address"]}{url_generator}'
+
+            return JsonResponse({'image_url' : image_url}, status = 200)
+
+        except KeyError:
+            return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
