@@ -71,10 +71,11 @@ class SignUpView(View):
                 user_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
                 User(
                     grade    = Grade.objects.get(id = data.get('grade', 3)),
-                    store    = Store.objects.get(id = data.get('store', 46)),
+                    store    = Store.objects.get(id = data.get('store', None)),
                     name     = data['name'],
                     email    = data['email'],
                     password = user_password.decode('utf-8'),
+                    image    = data.get('image_url', None),
                 ).save()
 
                 return HttpResponse(status = 200)
@@ -103,30 +104,39 @@ class SignInView(View):
 
 class UserListView(View):
     def get(self, request):
-        users = [{
-            store : list(
-                User
+        users = [
+            [{
+                store : list(
+                    User
+                    .objects
+                    .filter(store_id = store)
+                    .values_list('id', flat = True)
+                )
+            } for store in list(
+                Store
                 .objects
-                .filter(store_id = store)
                 .values_list('id', flat = True)
-            )
-        } for store in list(
-            Store
-            .objects
-            .values_list('id', flat = True)
-        )]
+            )],
+            {
+                "user_name" : list(
+                    User
+                    .objects
+                    .values_list('name', flat = True)
+                )
+            }
+        ]
 
         return JsonResponse({"users" : users}, status = 200)
 
 class ProfileUploadView(View):
     s3_client = boto3.client(
         's3',
-        aws_access_key_id = S3['Access_Key_ID'],
+        aws_access_key_id     = S3['Access_Key_ID'],
         aws_secret_access_key = S3['Secret_Access_Key']
     )
     def post(self, request):
         try:
-            file = request.FILES['filename']
+            file          = request.FILES['filename']
             url_generator = str(uuid.uuid4())
             self.s3_client.upload_fileobj(
                 file,
@@ -136,7 +146,7 @@ class ProfileUploadView(View):
                     "ContentType" : file.content_type
                 }
             )
-            image_url =f'{S3["Address"]}{url_generator}'
+            image_url = f'{S3["Address"]}{url_generator}'
 
             return JsonResponse({'image_url' : image_url}, status = 200)
 
