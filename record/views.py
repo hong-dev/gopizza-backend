@@ -1,13 +1,15 @@
 import json
+import pandas as pd
 
 from .models      import Score, Pizza
 from user.models  import User
 from store.models import Store
 
-from datetime         import datetime, timedelta, date
-from django.views     import View
-from django.http      import HttpResponse, JsonResponse
-from django.db.models import Sum, Avg, Min, Count
+from datetime              import datetime, timedelta, date
+from django.views          import View
+from django.http           import HttpResponse, JsonResponse
+from django.db.models      import Sum, Avg, Min, Count
+from sklearn.preprocessing import MinMaxScaler
 
 class ScoreView(View):
     def post(self, request):
@@ -53,14 +55,43 @@ def get_filter_condition(pizza_id, time_delta):
 
     return filter_condition
 
+def get_ranking(ranking_list, order_by, limit):
+    completion_importance, time_importance, count_importance = 50, 30, 20
+
+    scores = pd.DataFrame({
+        "completion_score" : [rank.completion_score for rank in ranking_list],
+        "time_score"       : [rank.average_time for rank in ranking_list],
+        "count_score"      : [rank.total_count for rank in ranking_list],
+    })
+
+    scores[ : ] = MinMaxScaler().fit_transform(scores[ : ])
+
+    total_score = (
+        scores.completion_score * completion_importance
+        + scores.time_score * time_importance
+        + scores.count_score * count_importance
+    )
+
+    rank_table = pd.DataFrame(ranking_list.values())
+    rank_table['total_score'] = total_score
+
+    ascending = (
+        True
+        if order_by == 'average_time' or order_by == 'shortest_time'
+        else False
+    )
+    ordered_table = rank_table.sort_values(order_by, ascending = ascending)[:limit]
+
+    return ordered_table
+
 class UserRankView(View):
     def get(self, request):
         limit      = request.GET.get('limit', User.objects.count())
         pizza_id   = request.GET.get('pizza_id')
-        order_by   = request.GET.get('order_by', 'completion_score')
+        order_by   = request.GET.get('order_by', 'total_score')
         time_delta = request.GET.get('time_delta')
 
-        ranking = (
+        ranking_list = (
             User
             .objects
             .filter(**get_filter_condition(pizza_id, time_delta))
@@ -81,17 +112,18 @@ class UserRankView(View):
                         Avg('score__cheese'),
                         Avg('score__topping')
                     ]
-                ),
+                )
             )
-            .order_by(order_by)
-        )[:int(limit)]
+        )
+
+        ordered_table = get_ranking(ranking_list, order_by, limit)
 
         user_ranking = [
             {
                 "id"               : user.id,
                 "name"             : user.name,
                 "image"            : user.image,
-                "store_id"         : user.store.id,
+                "store_id"         : user.store_id,
                 "store_name"       : user.store.name,
                 "count"            : user.total_count,
                 "average_time"     : round(user.average_time),
@@ -101,7 +133,8 @@ class UserRankView(View):
                 "cheese"           : round(user.average_cheese),
                 "topping"          : round(user.average_topping),
                 "completion_score" : round(user.completion_score),
-            } for user in ranking]
+                "total_score"      : round(float(ordered_table[ordered_table['id'] == user.id]['total_score']))
+            } for id_number in ordered_table['id'] if (user := ranking_list.get(id = id_number))]
 
         return JsonResponse({"ranking" : user_ranking}, status = 200)
 
@@ -112,7 +145,7 @@ class StoreRankView(View):
         order_by   = request.GET.get('order_by', 'completion_score')
         time_delta = request.GET.get('time_delta')
 
-        ranking = (
+        ranking_list = (
             Store
             .objects
             .filter(**get_filter_condition(pizza_id, time_delta))
@@ -132,10 +165,11 @@ class StoreRankView(View):
                         Avg('score__cheese'),
                         Avg('score__topping')
                     ]
-                ),
+                )
             )
-            .order_by(order_by)
-        )[:int(limit)]
+        )
+
+        ordered_table = get_ranking(ranking_list, order_by, limit)
 
         store_ranking = [
             {
@@ -149,6 +183,7 @@ class StoreRankView(View):
                 "cheese"           : round(store.average_cheese),
                 "topping"          : round(store.average_topping),
                 "completion_score" : round(store.completion_score),
-            } for store in ranking]
+                "total_score"      : round(float(ordered_table[ordered_table['id'] == store.id]['total_score']))
+            } for id_number in ordered_table['id'] if (store := ranking_list.get(id = id_number))]
 
         return JsonResponse({"ranking" : store_ranking}, status = 200)
