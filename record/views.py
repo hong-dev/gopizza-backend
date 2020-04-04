@@ -116,7 +116,7 @@ class UserRankView(View):
             )
         )
 
-        ordered_table = get_ranking(ranking_list, order_by, limit)
+        ordered_table = get_ranking(ranking_list, order_by, int(limit))
 
         user_ranking = [
             {
@@ -169,7 +169,7 @@ class StoreRankView(View):
             )
         )
 
-        ordered_table = get_ranking(ranking_list, order_by, limit)
+        ordered_table = get_ranking(ranking_list, order_by, int(limit))
 
         store_ranking = [
             {
