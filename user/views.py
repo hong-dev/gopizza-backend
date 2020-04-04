@@ -3,6 +3,8 @@ import bcrypt
 import jwt
 import boto3
 import uuid
+from PIL import Image
+from io  import BytesIO
 
 from .models      import User, Grade, Verification
 from store.models import Store
@@ -63,7 +65,7 @@ class SignUpView(View):
         data = json.loads(request.body)
 
         try:
-            if Verification.objects.filter(email = data['email']).exists():
+            if Verification.objects.filter(email = data['email']).filter(is_activated = True):
 
                 if User.objects.filter(email = data['email']).exists():
                     return JsonResponse({"message" : "DUPLICATED_EMAIL"}, status = 400)
@@ -136,14 +138,20 @@ class ProfileUploadView(View):
     )
     def post(self, request):
         try:
-            file          = request.FILES['filename']
+            image = request.FILES['filename']
+            im = Image.open(image)
+            im = im.resize((400, 400))
+            buffer = BytesIO()
+            im.save(buffer, "JPEG")
+            buffer.seek(0)
+
             url_generator = str(uuid.uuid4())
             self.s3_client.upload_fileobj(
-                file,
+                buffer,
                 "wepizza",
                 url_generator,
                 ExtraArgs = {
-                    "ContentType" : file.content_type
+                    "ContentType": 'image/jpeg'
                 }
             )
             image_url = f'{S3["Address"]}{url_generator}'
