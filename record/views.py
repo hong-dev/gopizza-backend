@@ -11,6 +11,10 @@ from django.http           import HttpResponse, JsonResponse
 from django.db.models      import Sum, Avg, Min, Count
 from sklearn.preprocessing import MinMaxScaler
 
+class PizzaView(View):
+    def get(self, request):
+        return JsonResponse({"pizza" : list(Pizza.objects.values())}, status = 200)
+
 class ScoreView(View):
     def post(self, request):
         try:
