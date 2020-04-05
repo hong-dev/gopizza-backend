@@ -64,7 +64,7 @@ def get_ranking(ranking_list, order_by, limit):
 
     scores = pd.DataFrame({
         "completion_score" : [rank.completion_score for rank in ranking_list],
-        "time_score"       : [rank.average_time for rank in ranking_list],
+        "time_score"       : [-rank.average_time for rank in ranking_list],
         "count_score"      : [rank.total_count for rank in ranking_list],
     })
 
