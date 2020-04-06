@@ -24,14 +24,14 @@ class EmailVerificationView(View):
         try:
             data = json.loads(request.body)
             user = Verification.objects.create(
-                email = data['email'],
+                email        = data['email'],
                 is_activated = False,
             )
 
-            current_site = get_current_site(request)
-            domain = current_site.domain
-            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-            token = account_activation_token.make_token(user)
+            current_site  = get_current_site(request)
+            domain        = current_site.domain
+            uidb64        = urlsafe_base64_encode(force_bytes(user.pk))
+            token         = account_activation_token.make_token(user)
             email_content = message(domain, uidb64, token)
 
             email_subject = "[GOPIZZA] 이메일 인증 안내"
@@ -46,7 +46,7 @@ class EmailVerificationView(View):
 
     def get(self, request, uidb64, token):
         try:
-            uid = force_text(urlsafe_base64_decode(uidb64))
+            uid  = force_text(urlsafe_base64_decode(uidb64))
             user = Verification.objects.get(pk = uid)
 
             if account_activation_token.check_token(user, token):
@@ -68,6 +68,7 @@ class SignUpView(View):
             if Verification.objects.filter(email = data['email']).filter(is_activated = True):
 
                 if User.objects.filter(email = data['email']).exists():
+
                     return JsonResponse({"message" : "DUPLICATED_EMAIL"}, status = 400)
 
                 user_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
@@ -138,9 +139,9 @@ class ProfileUploadView(View):
     )
     def post(self, request):
         try:
-            image = request.FILES['filename']
-            im = Image.open(image)
-            im = im.resize((400, 400))
+            image  = request.FILES['filename']
+            im     = Image.open(image)
+            im     = im.resize((400, 400))
             buffer = BytesIO()
             im.save(buffer, "JPEG")
             buffer.seek(0)
@@ -151,12 +152,12 @@ class ProfileUploadView(View):
                 "wepizza",
                 url_generator,
                 ExtraArgs = {
-                    "ContentType": 'image/jpeg'
+                    "ContentType": "image/jpeg"
                 }
             )
             image_url = f'{S3["Address"]}{url_generator}'
 
-            return JsonResponse({'image_url' : image_url}, status = 200)
+            return JsonResponse({"image_url" : image_url}, status = 200)
 
         except KeyError:
             return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
