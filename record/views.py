@@ -140,7 +140,7 @@ class UserRankView(View):
                 "cheese"           : round(user.average_cheese),
                 "topping"          : round(user.average_topping),
                 "completion_score" : round(user.completion_score),
-                "total_score"      : round(float(ordered_table[ordered_table['id'] == user.id]['total_score']))
+                "total_score"      : round(float(ordered_table[ordered_table['id'] == user.id]['total_score']),2)
             } for id_number in ordered_table['id'] if (user := ranking_list.get(id = id_number))]
 
         return JsonResponse({"ranking" : user_ranking}, status = 200)
