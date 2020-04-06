@@ -85,6 +85,7 @@ def get_ranking(ranking_list, order_by, limit):
         else False
     )
     ordered_table = rank_table.sort_values(order_by, ascending = ascending)[:limit]
+    ordered_table['rank'] = ordered_table[order_by].rank(ascending = ascending, method = 'min').head(limit)
 
     return ordered_table
 
@@ -140,7 +141,8 @@ class UserRankView(View):
                 "cheese"           : round(user.average_cheese),
                 "topping"          : round(user.average_topping),
                 "completion_score" : round(user.completion_score),
-                "total_score"      : round(float(ordered_table[ordered_table['id'] == user.id]['total_score']),2)
+                "total_score"      : round(float(ordered_table[ordered_table['id'] == user.id]['total_score']), 2),
+                "rank"             : round(float(ordered_table[ordered_table['id'] == user.id]['rank']))
             } for id_number in ordered_table['id'] if (user := ranking_list.get(id = id_number))]
 
         return JsonResponse({"ranking" : user_ranking}, status = 200)
@@ -193,7 +195,8 @@ class StoreRankView(View):
                 "cheese"           : round(store.average_cheese),
                 "topping"          : round(store.average_topping),
                 "completion_score" : round(store.completion_score),
-                "total_score"      : round(float(ordered_table[ordered_table['id'] == store.id]['total_score']))
+                "total_score"      : round(float(ordered_table[ordered_table['id'] == store.id]['total_score']), 2),
+                "rank"             : round(float(ordered_table[ordered_table['id'] == store.id]['rank']))
             } for id_number in ordered_table['id'] if (store := ranking_list.get(id = id_number))]
 
         return JsonResponse({"ranking" : store_ranking}, status = 200)
