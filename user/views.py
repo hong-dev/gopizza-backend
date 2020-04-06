@@ -11,6 +11,7 @@ from store.models import Store
 from my_settings  import SECRET, ALGORITHM, EMAIL, S3
 from .texts       import message
 from .tokens      import account_activation_token
+from .utils       import login_required
 
 from django.views                   import View
 from django.http                    import HttpResponse, JsonResponse
@@ -18,6 +19,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http              import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail               import EmailMessage
 from django.utils.encoding          import force_bytes, force_text
+from django.db.models               import Q
 
 class EmailVerificationView(View):
     def post(self, request):
@@ -161,3 +163,42 @@ class ProfileUploadView(View):
 
         except KeyError:
             return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
+
+class UserGetView(View):
+    @login_required
+    def get(self, request):
+        grade_id = request.user.grade_id
+        store_id = request.user.store_id
+
+        if grade_id == 3:
+            return JsonResponse({"message" : "Forbidden"}, status = 403)
+
+        filter_condition = {}
+        if grade_id == 2:
+            filter_condition = {'store_id' : store_id}
+
+        users = (
+            User
+            .objects
+            .filter(**filter_condition)
+            .filter(~Q(grade_id = 1))
+            .select_related('grade', 'store')
+            .values(
+                "id",
+                "name",
+                "grade_id",
+                "grade__name",
+                "is_approved",
+                "store_id",
+                "store__name"
+            )
+        )
+
+        return JsonResponse({"user" : list(users)}, status = 200)
+
+class UserDeleteView(View):
+    @login_required
+    def delete(self, request, user_id):
+        User.objects.get(id = user_id).delete()
+        return HttpResponse(status = 200)
+
