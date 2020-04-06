@@ -120,6 +120,9 @@ class UserRankView(View):
             )
         )
 
+        if len(ranking_list) == 0:
+            return JsonResponse({"message" : "RANKING_DOES_NOT_EXIST"}, status = 400)
+
         ordered_table = get_ranking(ranking_list, order_by, int(limit))
 
         user_ranking = [
@@ -130,7 +133,7 @@ class UserRankView(View):
                 "store_id"         : user.store_id,
                 "store_name"       : user.store.name,
                 "count"            : user.total_count,
-                "average_time"     : round(user.average_time),
+                "average_time"     : round(user.average_time, 2),
                 "shortest_time"    : user.shortest_time,
                 "quality"          : round(user.average_quality),
                 "sauce"            : round(user.average_sauce),
@@ -173,6 +176,9 @@ class StoreRankView(View):
             )
         )
 
+        if len(ranking_list) == 0:
+            return JsonResponse({"message" : "RANKING_DOES_NOT_EXIST"}, status = 400)
+
         ordered_table = get_ranking(ranking_list, order_by, int(limit))
 
         store_ranking = [
@@ -180,7 +186,7 @@ class StoreRankView(View):
                 "id"               : store.id,
                 "name"             : store.name,
                 "count"            : store.total_count,
-                "average_time"     : round(store.average_time),
+                "average_time"     : round(store.average_time, 2),
                 "shortest_time"    : store.shortest_time,
                 "quality"          : round(store.average_quality),
                 "sauce"            : round(store.average_sauce),
