@@ -5,7 +5,10 @@ from .views import (
     UserListView,
     ProfileUploadView,
     UserGetView,
-    UserDeleteView
+    CheckPasswordView,
+    UserDeleteView,
+    PasswordChangeView,
+    ImageChangeView
 )
 
 
@@ -19,5 +22,8 @@ urlpatterns = [
     path('', UserListView.as_view()),
     path('/profile-upload', ProfileUploadView.as_view()),
     path('/get', UserGetView.as_view()),
-    path('/delete/<int:user_id>', UserDeleteView.as_view())
+    path('/check-password', CheckPasswordView.as_view()),
+    path('/delete/<int:user_id>', UserDeleteView.as_view()),
+    path('/password', PasswordChangeView.as_view()),
+    path('/image', ImageChangeView.as_view())
 ]
