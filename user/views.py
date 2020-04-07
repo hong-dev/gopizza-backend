@@ -235,3 +235,35 @@ class ImageChangeView(View):
         User.objects.filter(id = user.id).update(image = data['image_url'])
 
         return HttpResponse(status = 200)
+
+class UserInfoView(View):
+    @login_required
+    def get(self, request):
+        user_id = request.user.id
+        user_info = (
+            User
+            .objects
+            .select_related('store')
+            .filter(id = user_id)
+            .values(
+                "id",
+                "name",
+                "email",
+                "store__name",
+                "image"
+            )
+        )
+
+        return JsonResponse({"user_info" : list(user_info)}, status = 200)
+
+class ApprovalView(View):
+    @login_required
+    def post(self, request, user_id):
+        grade_id = request.user.grade_id
+
+        if grade_id == 3:
+            return JsonResponse({"message" : "Forbidden"}, status = 403)
+
+        User.objects.filter(id = user_id).update(is_approved = True)
+
+        return HttpResponse(status = 200)
