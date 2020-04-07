@@ -1,8 +1,10 @@
-from .models    import Quest, UserQuestHistory
-from user.utils import login_required
+from .models     import Quest, UserQuestHistory
+from user.models import User
+from user.utils  import login_required
 
-from django.views import View
-from django.http  import HttpResponse, JsonResponse
+from django.views     import View
+from django.http      import HttpResponse, JsonResponse
+from django.db.models import Count
 
 class QuestListView(View):
     @login_required
@@ -47,3 +49,49 @@ class QuestClaimView(View):
             return JsonResponse({"message" : "Claim Succeed"}, status = 200)
 
         return JsonResponse({"ERROR" : "IS_NOT_ACHIEVED"}, status = 400)
+
+class ScoreGetView(View):
+    @login_required
+    def get(self, request):
+        total_counts = (
+            User
+            .objects
+            .filter(id = request.user.id)
+            .annotate(
+                count = Count('score')
+            )
+            .values('count')
+        )
+        total_count = [count['count'] for count in total_counts ]
+
+        sweet_potato_counts = (
+            User
+            .objects
+            .filter(id = request.user.id)
+            .filter(score__pizza_id = 7)
+            .annotate(
+                count = Count('score')
+            )
+            .values('count')
+        )
+        sweet_potato_count = [count['count'] for count in sweet_potato_counts]
+
+        pepperoni_counts = (
+            User
+            .objects
+            .filter(id = request.user.id)
+            .filter(score__pizza_id = 4)
+            .annotate(
+                count = Count('score')
+            )
+            .values('count')
+        )
+        pepperoni_count = [count['count'] for count in pepperoni_counts]
+
+        counts = {
+            'total'        : total_count,
+            'sweet_potato' : sweet_potato_count,
+            'pepperoni'    : pepperoni_count
+        }
+
+        return JsonResponse({"counts" : counts}, status = 200)
