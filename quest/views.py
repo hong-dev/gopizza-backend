@@ -18,6 +18,7 @@ class QuestListView(View):
                 'is_achieved',
                 'is_claimed',
                 'is_rewarded',
+                'quest__category__name',
                 'quest_id',
                 'quest__name',
                 'quest__goal',
