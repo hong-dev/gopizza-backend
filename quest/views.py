@@ -24,3 +24,26 @@ class QuestListView(View):
         )
 
         return JsonResponse({"quests" : quest_list}, status = 200)
+
+class QuestClaimView(View):
+    @login_required
+    def post(self, request, quest_id):
+        user_quest = UserQuestHistory.objects.get(
+            quest_id = quest_id,
+            user_id  = request.user.id
+        )
+
+        if user_quest.is_achieved:
+            if user_quest.quest.badge:
+                user_quest.is_claimed  = True
+                user_quest.is_rewarded = True
+                user_quest.save()
+
+                return JsonResponse({"badge" : user_quest.quest.badge}, status = 200)
+
+            user_quest.is_claimed = True
+            user_quest.save()
+
+            return JsonResponse({"message" : "Claim Succeed"}, status = 200)
+
+        return JsonResponse({"ERROR" : "IS_NOT_ACHIEVED"}, status = 400)
