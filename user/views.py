@@ -186,6 +186,7 @@ class UserGetView(View):
             .values(
                 "id",
                 "name",
+                "image",
                 "grade_id",
                 "grade__name",
                 "is_approved",
@@ -196,9 +197,41 @@ class UserGetView(View):
 
         return JsonResponse({"user" : list(users)}, status = 200)
 
+class CheckPasswordView(View):
+    @login_required
+    def post(self, request):
+        user = request.user
+        data = json.loads(request.body)
+
+        if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+            return HttpResponse(status = 200)
+
+        return JsonResponse({"message" : "WRONG_PASSWORD"}, status = 400)
+
 class UserDeleteView(View):
     @login_required
     def delete(self, request, user_id):
         User.objects.get(id = user_id).delete()
+
         return HttpResponse(status = 200)
 
+class PasswordChangeView(View):
+    @login_required
+    def post(self, request):
+        user = request.user
+        data = json.loads(request.body)
+
+        password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+        User.objects.filter(id = user.id).update(password = password.decode())
+
+        return HttpResponse(status = 200)
+
+class ImageChangeView(View):
+    @login_required
+    def post(self, request):
+        user = request.user
+        data = json.loads(request.body)
+
+        User.objects.filter(id = user.id).update(image = data['image_url'])
+
+        return HttpResponse(status = 200)
