@@ -204,7 +204,7 @@ class CheckPasswordView(View):
         data = json.loads(request.body)
 
         if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-            return HttpResponse(status = 200)
+            return JsonResponse({"user_id" : user.id}, status = 200)
 
         return JsonResponse({"message" : "WRONG_PASSWORD"}, status = 400)
 
