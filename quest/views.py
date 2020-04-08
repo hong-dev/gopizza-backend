@@ -39,7 +39,6 @@ class QuestClaimView(View):
         if user_quest.is_achieved:
             if user_quest.quest.badge:
                 user_quest.is_claimed  = True
-                user_quest.is_rewarded = True
                 user_quest.save()
 
                 return JsonResponse({"badge" : user_quest.quest.badge}, status = 200)
@@ -47,7 +46,7 @@ class QuestClaimView(View):
             user_quest.is_claimed = True
             user_quest.save()
 
-            return JsonResponse({"message" : "Claim Succeed"}, status = 200)
+            return JsonResponse({"coupon" : user_quest.quest.reward}, status = 200)
 
         return JsonResponse({"ERROR" : "IS_NOT_ACHIEVED"}, status = 400)
 
