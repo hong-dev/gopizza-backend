@@ -1,10 +1,12 @@
 from .models     import Quest, UserQuestHistory
 from user.models import User
 from user.utils  import login_required
+from my_settings import EMAIL
 
 from django.views     import View
 from django.http      import HttpResponse, JsonResponse
 from django.db.models import Count
+from django.core.mail import EmailMessage
 
 class QuestListView(View):
     @login_required
@@ -137,3 +139,64 @@ class ScoreGetView(View):
             quest_5.save()
 
         return JsonResponse({"pizza_counts" : pizza_counts}, status = 200)
+
+class RewardAprrovalView(View):
+    @login_required
+    def get(self, request):
+        user_grade = request.user.grade.id
+        if user_grade == 1:
+            approvals = (
+                UserQuestHistory
+                .objects
+                .filter(is_claimed = True)
+                .order_by('is_rewarded')
+                .values(
+                    'user__id'
+                    ,'user__name'
+                    ,'user__store__name'
+                    ,'quest__id'
+                    ,'quest__name'
+                    ,'updated_at'
+                    ,'is_rewarded'
+                )
+            )
+            approval_list = [ approval for approval in approvals ]
+
+            return JsonResponse({"approval_list" : approval_list}, status = 200)
+
+        return JsonResponse({"message" : "Access Denied"}, status = 403)
+
+    @login_required
+    def post(self, request, user__id, quest__id):
+        user_grade = request.user.grade.id
+        if user_grade == 1:
+            user_quest = UserQuestHistory.objects.get(
+                user_id  = user__id,
+                quest_id = quest__id
+            )
+
+            if user_quest.is_claimed:
+                if user_quest.quest.badge:
+                    user_quest.is_rewarded  = True
+                    user_quest.save()
+
+                    email_subject = "[GOPIZZA] 리워드 지급 안내"
+                    email_to      = user_quest.user.email
+                    email         = EmailMessage(email_subject,'뱃지 지급이 완료되었습니다.', user_quest.quest.badge , to = [email_to])
+                    email.send()
+
+                    return JsonResponse({"badge" : user_quest.quest.badge}, status = 200)
+
+                user_quest.is_rewarded = True
+                user_quest.save()
+
+                email_subject = "[GOPIZZA] 리워드 지급 안내"
+                email_to      = user_quest.user.email
+                email         = EmailMessage(email_subject, '쿠폰 지급이 완료되었습니다.' ,to = [email_to])
+                email.send()
+
+                return JsonResponse({"coupon" : user_quest.quest.reward}, status = 200)
+
+            return JsonResponse({"ERROR" : "IS_NOT_CLAIMED"}, status = 400) 
+
+        return JsonResponse({"message" : "Access Denied"}, status = 403)
