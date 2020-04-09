@@ -200,3 +200,33 @@ class RewardAprrovalView(View):
             return JsonResponse({"ERROR" : "IS_NOT_CLAIMED"}, status = 400) 
 
         return JsonResponse({"message" : "Access Denied"}, status = 403)
+
+class BadgeCouponView(View):
+    def get(self, request, user_id):
+        quest_history = (
+            UserQuestHistory
+            .objects
+            .select_related('quest', 'user')
+            .filter(user_id = user_id)
+        )
+
+        coupon = [
+            {
+                "name"        : quest.quest.name,
+                "is_rewarded" : quest.is_rewarded,
+                "image"       : quest.quest.reward,
+            } for quest in quest_history if quest.quest.reward]
+
+        badge = [
+            {
+                "name"        : quest.quest.name,
+                "is_rewarded" : quest.is_rewarded,
+                "image"       : quest.quest.badge
+            } for quest in quest_history if quest.quest.badge]
+
+        reward = {
+            "coupon_count" : len(coupon),
+            "badge_count"  : len(badge)
+        }
+
+        return JsonResponse({"coupon" : coupon, "badge" : badge, "reward" : reward}, status = 200)
