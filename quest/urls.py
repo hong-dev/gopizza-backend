@@ -2,8 +2,10 @@ from .views import (
     QuestListView,
     QuestClaimView,
     ScoreGetView,
-    RewardAprrovalView
+    RewardAprrovalView,
+    BadgeCouponView
 )
+
 from django.urls import path
 
 urlpatterns = [
@@ -12,4 +14,5 @@ urlpatterns = [
     path('/get-my-score', ScoreGetView.as_view()),
     path('/reward-approval', RewardAprrovalView.as_view()),
     path('/reward-approval/user/<int:user__id>/quest/<int:quest__id>', RewardAprrovalView.as_view()),
+    path('/reward/<int:user_id>', BadgeCouponView.as_view())
 ]
