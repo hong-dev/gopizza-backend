@@ -3,6 +3,8 @@ import bcrypt
 import jwt
 import boto3
 import uuid
+import random
+import string
 from PIL import Image
 from io  import BytesIO
 
@@ -267,3 +269,34 @@ class ApprovalView(View):
         User.objects.filter(id = user_id).update(is_approved = True)
 
         return HttpResponse(status = 200)
+
+class NewPasswordView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            email = data['email']
+
+            digit = 10
+            string_pool     = string.ascii_letters + string.digits 
+            new_password    = ''.join(random.choice(string_pool) for x in range(digit))
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+
+            user          = User.objects.get(email = email)
+            user.password = hashed_password.decode('utf-8')
+            user.save()
+
+            email_subject = "[GOPIZZA] 임시 비밀번호 발급 안내"
+            email_to      = data['email']
+            email         = EmailMessage(
+                email_subject,
+                f" 임시비밀번호: {new_password} 
+                \n 로그인 후 새로운 비밀번호로 변경 해주세요.",
+                to = [email_to]
+            )
+            email.send()
+
+            return JsonResponse({"Message" : "Password Reissued!"}, status = 200)
+        except User.DoesNotExist :
+            return JsonResponse({"Message" : "USER_DOES_NOT_EXIST"}, status = 400)
+
+
