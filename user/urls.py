@@ -10,7 +10,8 @@ from .views import (
     PasswordChangeView,
     ImageChangeView,
     UserInfoView,
-    ApprovalView
+    ApprovalView,
+    NewPasswordView
 )
 
 
@@ -29,5 +30,6 @@ urlpatterns = [
     path('/password', PasswordChangeView.as_view()),
     path('/image', ImageChangeView.as_view()),
     path('/info', UserInfoView.as_view()),
-    path('/approval/<int:user_id>', ApprovalView.as_view())
+    path('/approval/<int:user_id>', ApprovalView.as_view()),
+    path('/new-password', NewPasswordView.as_view())
 ]
