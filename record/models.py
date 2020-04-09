@@ -17,7 +17,7 @@ class Score(models.Model):
     pizza        = models.ForeignKey('Pizza', on_delete = models.SET_NULL, null = True)
     store        = models.ForeignKey(Store, on_delete = models.SET_NULL, null = True)
     order_number = models.CharField(max_length = 200, null = True)
-    time         = models.DecimalField(max_digits = 10, decimal_places = 2, null = True)
+    time         = models.FloatField(null = True)
     quality      = models.IntegerField(validators = [MaxValueValidator(100), MinValueValidator(0)], null = True)
     sauce        = models.IntegerField(validators = [MaxValueValidator(100), MinValueValidator(0)], null = True)
     cheese       = models.IntegerField(validators = [MaxValueValidator(100), MinValueValidator(0)], null = True)
