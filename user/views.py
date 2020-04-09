@@ -289,8 +289,7 @@ class NewPasswordView(View):
             email_to      = data['email']
             email         = EmailMessage(
                 email_subject,
-                f" 임시비밀번호: {new_password} 
-                \n 로그인 후 새로운 비밀번호로 변경 해주세요.",
+                f" 임시비밀번호: {new_password} \n 로그인 후 새로운 비밀번호로 변경 해주세요.",
                 to = [email_to]
             )
             email.send()
