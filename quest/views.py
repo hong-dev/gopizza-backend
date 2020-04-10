@@ -214,7 +214,7 @@ class BadgeCouponView(View):
             {
                 "name"        : quest.quest.name,
                 "is_rewarded" : quest.is_rewarded,
-                "image"       : quest.quest.reward,
+                "image"       : quest.quest.reward
             } for quest in quest_history if quest.quest.reward]
 
         badge = [
@@ -225,8 +225,18 @@ class BadgeCouponView(View):
             } for quest in quest_history if quest.quest.badge]
 
         reward = {
-            "coupon_count" : len(coupon),
-            "badge_count"  : len(badge)
+            "coupon_count" : (
+                quest_history
+                .filter(is_rewarded = True)
+                .exclude(quest__reward = '')
+                .count()
+            ),
+            "badge_count"  : (
+                quest_history
+                .filter(is_rewarded = True)
+                .exclude(quest__badge = '')
+                .count()
+            )
         }
 
         return JsonResponse({"coupon" : coupon, "badge" : badge, "reward" : reward}, status = 200)
