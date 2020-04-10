@@ -182,7 +182,7 @@ class RewardAprrovalView(View):
 
                     email_subject = "[GOPIZZA] 리워드 지급 안내"
                     email_to      = user_quest.user.email
-                    email         = EmailMessage(email_subject,'뱃지 지급이 완료되었습니다.', user_quest.quest.badge , to = [email_to])
+                    email         = EmailMessage(email_subject,'뱃지 지급이 완료되었습니다.', to = [email_to])
                     email.send()
 
                     return JsonResponse({"badge" : user_quest.quest.badge}, status = 200)
