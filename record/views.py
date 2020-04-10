@@ -44,6 +44,61 @@ class ScoreView(View):
         except KeyError:
             return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
 
+def get_user_list(pizza_id, time_delta):
+    ranking_list = (
+        User
+        .objects
+        .filter(**get_filter_condition(pizza_id, time_delta))
+        .select_related('store')
+        .prefetch_related('score_set')
+        .annotate(
+            total_count      = Count('score'),
+            average_time     = Avg('score__time'),
+            shortest_time    = Min('score__time'),
+            average_quality  = Avg('score__quality'),
+            average_sauce    = Avg('score__sauce'),
+            average_cheese   = Avg('score__cheese'),
+            average_topping  = Avg('score__topping'),
+            completion_score = sum(
+                [
+                    Avg('score__quality'),
+                    Avg('score__sauce'),
+                    Avg('score__cheese'),
+                    Avg('score__topping')
+                ]
+            )
+        )
+    )
+
+    return ranking_list
+
+def get_store_list(pizza_id, time_delta):
+    ranking_list = (
+        Store
+        .objects
+        .filter(**get_filter_condition(pizza_id, time_delta))
+        .prefetch_related('user_set')
+        .annotate(
+            total_count      = Count('score'),
+            average_time     = Avg('score__time'),
+            shortest_time    = Min('score__time'),
+            average_quality  = Avg('score__quality'),
+            average_sauce    = Avg('score__sauce'),
+            average_cheese   = Avg('score__cheese'),
+            average_topping  = Avg('score__topping'),
+            completion_score = sum(
+                [
+                    Avg('score__quality'),
+                    Avg('score__sauce'),
+                    Avg('score__cheese'),
+                    Avg('score__topping')
+                ]
+            )
+        )
+    )
+
+    return ranking_list
+
 def get_filter_condition(pizza_id, time_delta):
     filter_condition = {}
 
@@ -105,35 +160,12 @@ class UserRankView(View):
         order_by   = request.GET.get('order_by', 'total_score')
         time_delta = request.GET.get('time_delta')
 
-        ranking_list = (
-            User
-            .objects
-            .filter(**get_filter_condition(pizza_id, time_delta))
-            .select_related('store')
-            .prefetch_related('score_set')
-            .annotate(
-                total_count      = Count('score'),
-                average_time     = Avg('score__time'),
-                shortest_time    = Min('score__time'),
-                average_quality  = Avg('score__quality'),
-                average_sauce    = Avg('score__sauce'),
-                average_cheese   = Avg('score__cheese'),
-                average_topping  = Avg('score__topping'),
-                completion_score = sum(
-                    [
-                        Avg('score__quality'),
-                        Avg('score__sauce'),
-                        Avg('score__cheese'),
-                        Avg('score__topping')
-                    ]
-                )
-            )
-        )
+        ranking_list = get_user_list(pizza_id, time_delta)
 
         if len(ranking_list) == 0:
             return JsonResponse({"message" : "RANKING_DOES_NOT_EXIST"}, status = 400)
 
-        ordered_table = get_ranking(ranking_list, order_by)[:limit]
+        ordered_table = get_ranking(ranking_list, order_by)[:int(limit)]
 
         user_ranking = [
             {
@@ -160,37 +192,15 @@ class StoreRankView(View):
     def get(self, request):
         limit      = request.GET.get('limit', Store.objects.count())
         pizza_id   = request.GET.get('pizza_id')
-        order_by   = request.GET.get('order_by', 'completion_score')
+        order_by   = request.GET.get('order_by', 'total_score')
         time_delta = request.GET.get('time_delta')
 
-        ranking_list = (
-            Store
-            .objects
-            .filter(**get_filter_condition(pizza_id, time_delta))
-            .prefetch_related('user_set')
-            .annotate(
-                total_count      = Count('score'),
-                average_time     = Avg('score__time'),
-                shortest_time    = Min('score__time'),
-                average_quality  = Avg('score__quality'),
-                average_sauce    = Avg('score__sauce'),
-                average_cheese   = Avg('score__cheese'),
-                average_topping  = Avg('score__topping'),
-                completion_score = sum(
-                    [
-                        Avg('score__quality'),
-                        Avg('score__sauce'),
-                        Avg('score__cheese'),
-                        Avg('score__topping')
-                    ]
-                )
-            )
-        )
+        ranking_list = get_store_list(pizza_id, time_delta)
 
         if len(ranking_list) == 0:
             return JsonResponse({"message" : "RANKING_DOES_NOT_EXIST"}, status = 400)
 
-        ordered_table = get_ranking(ranking_list, order_by)[:limit]
+        ordered_table = get_ranking(ranking_list, order_by)[:int(limit)]
 
         store_ranking = [
             {
@@ -212,32 +222,11 @@ class StoreRankView(View):
 
 class UserScoreView(View):
     def get(self, request, user_id):
-        order_by   = request.GET.get('order_by', 'completion_score')
+        order_by   = request.GET.get('order_by', 'total_score')
+        pizza_id   = request.GET.get('pizza_id')
+        time_delta = request.GET.get('time_delta')
 
-        ranking_list = (
-            User
-            .objects
-            .select_related('store')
-            .prefetch_related('score_set')
-            .annotate(
-                total_count      = Count('score'),
-                average_time     = Avg('score__time'),
-                shortest_time    = Min('score__time'),
-                average_quality  = Avg('score__quality'),
-                average_sauce    = Avg('score__sauce'),
-                average_cheese   = Avg('score__cheese'),
-                average_topping  = Avg('score__topping'),
-                completion_score = sum(
-                    [
-                        Avg('score__quality'),
-                        Avg('score__sauce'),
-                        Avg('score__cheese'),
-                        Avg('score__topping')
-                    ]
-                )
-            )
-        )
-
+        ranking_list = get_user_list(pizza_id, time_delta)
         ordered_table = get_ranking(ranking_list, order_by)
 
         selected_user = ordered_table[ordered_table['id'] == user_id]
@@ -267,6 +256,40 @@ class UserScoreView(View):
         ]].to_dict('records')[0]
 
         user_info['store_name'] = ranking_list.get(id = user_id).store.name
-        user_info['count_user'] = len(ranking_list)
 
         return JsonResponse({'user_info' : user_info}, status = 200)
+
+class StoreScoreView(View):
+    def get(self, request, store_id):
+        order_by   = request.GET.get('order_by', 'total_score')
+        pizza_id   = request.GET.get('pizza_id')
+        time_delta = request.GET.get('time_delta')
+
+        ranking_list = get_store_list(pizza_id, time_delta)
+        ordered_table = get_ranking(ranking_list, order_by)
+
+        selected_store = ordered_table[ordered_table['id'] == store_id]
+
+        store_info = selected_store[[
+            'id',
+            'name',
+            'total_score',
+            'total_count',
+            'shortest_time',
+            'average_time',
+            'completion_score',
+            'average_quality',
+            'average_sauce',
+            'average_cheese',
+            'average_topping',
+            'completion_standard',
+            'time_standard',
+            'count_standard',
+            'total_score_rank',
+            'total_count_rank',
+            'completion_score_rank',
+            'average_time_rank',
+            'shortest_time_rank'
+        ]].to_dict('records')[0]
+
+        return JsonResponse({'store_info' : store_info}, status = 200)
