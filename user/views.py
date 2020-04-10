@@ -185,6 +185,7 @@ class UserGetView(View):
             .filter(**filter_condition)
             .filter(~Q(grade_id = 1))
             .select_related('grade', 'store')
+            .order_by('-grade__name', 'is_approved')
             .values(
                 "id",
                 "name",
@@ -251,6 +252,7 @@ class UserInfoView(View):
                 "id",
                 "name",
                 "email",
+                "grade__name",
                 "store__name",
                 "image"
             )
