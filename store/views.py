@@ -1,6 +1,6 @@
 from .models      import Store
 from user.models  import User
-from quest.models import Quest
+from quest.models import UserQuestHistory
 
 from django.views import View
 from django.http  import HttpResponse, JsonResponse
@@ -32,8 +32,8 @@ class StoreDetailView(View):
                 "id"     : crew['id'],
                 "name"   : crew['name'],
                 "image"  : crew['image'],
-                "badge"  : [quest.badge for quest in Quest.objects.filter(user__id = crew['id']) if quest.badge ],
-                "coupon" : [quest.reward for quest in Quest.objects.filter(user__id = crew['id']) if quest.reward ],
+                "badge"  : [quest.quest.badge for quest in UserQuestHistory.objects.filter(user__id = crew['id']) if quest.is_claimed and quest.quest.badge ],
+                "coupon" : [quest.quest.reward for quest in UserQuestHistory.objects.filter(user__id = crew['id']) if quest.is_claimed and quest.quest.reward],
             } for crew in crews ]
 
         return JsonResponse({"crew_list" : crew_list}, status = 200)
