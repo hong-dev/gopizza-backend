@@ -261,7 +261,11 @@ class UserScoreView(View):
             return JsonResponse({"user_info" : user_info}, status = 200)
 
         except IndexError:
-            return JsonResponse({"message" : "SCORE_DOES_NOT_EXIST"}, status = 400)
+            return JsonResponse({"user_info" : list(User
+                                                    .objects
+                                                    .filter(id = user_id)
+                                                    .values('id', 'image','store__name'))},
+                                status = 200)
 
 class StoreScoreView(View):
     def get(self, request, store_id):

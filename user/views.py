@@ -9,6 +9,7 @@ from PIL import Image
 from io  import BytesIO
 
 from .models      import User, Grade, Verification
+from quest.models import UserQuestHistory
 from store.models import Store
 from my_settings  import SECRET, ALGORITHM, EMAIL, S3
 from .texts       import message
@@ -274,6 +275,15 @@ class ApprovalView(View):
             return JsonResponse({"message" : "Forbidden"}, status = 403)
 
         User.objects.filter(id = user_id).update(is_approved = True)
+
+        for num in range(1, 6):
+            UserQuestHistory(
+                is_achieved = False,
+                is_claimed  = False,
+                is_rewarded = False,
+                quest_id    = num,
+                user_id     = user_id
+            ).save()
 
         return HttpResponse(status = 200)
 
