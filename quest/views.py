@@ -149,7 +149,7 @@ class RewardAprrovalView(View):
                 UserQuestHistory
                 .objects
                 .filter(is_claimed = True)
-                .order_by('is_rewarded')
+                .order_by('-updated_at')
                 .values(
                     'user__id'
                     ,'user__name'
@@ -160,7 +160,7 @@ class RewardAprrovalView(View):
                     ,'is_rewarded'
                 )
             )
-            approval_list = [ approval for approval in approvals ]
+            approval_list = [ approval for approval in approvals if approval['user__id'] ]
 
             return JsonResponse({"approval_list" : approval_list}, status = 200)
 
