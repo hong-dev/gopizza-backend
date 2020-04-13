@@ -99,12 +99,13 @@ class SignInView(View):
         try:
             if User.objects.filter(email = data['email']).exists():
                 user = User.objects.get(email = data['email'])
+                if user.is_approved:
+                    if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                        token = jwt.encode({"user" : user.id}, SECRET['secret'], ALGORITHM)
 
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    token = jwt.encode({"user" : user.id}, SECRET['secret'], ALGORITHM)
-
-                    return JsonResponse({"token" : token.decode('utf-8')}, status = 200)
-                return HttpResponse(status = 401)
+                        return JsonResponse({"token" : token.decode('utf-8')}, status = 200)
+                    return HttpResponse(status = 401)
+                return JsonResponse({"message" : "Need Manager Approval"}, status = 403)
             return HttpResponse(status = 401)
 
         except  KeyError:
@@ -314,5 +315,3 @@ class NewPasswordView(View):
             return JsonResponse({"Message" : "Password Reissued!"}, status = 200)
         except User.DoesNotExist :
             return JsonResponse({"Message" : "USER_DOES_NOT_EXIST"}, status = 400)
-
-
