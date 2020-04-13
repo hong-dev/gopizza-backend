@@ -222,74 +222,82 @@ class StoreRankView(View):
 
 class UserScoreView(View):
     def get(self, request, user_id):
-        order_by   = request.GET.get('order_by', 'total_score')
-        pizza_id   = request.GET.get('pizza_id')
-        time_delta = request.GET.get('time_delta')
+        try:
+            order_by   = request.GET.get('order_by', 'total_score')
+            pizza_id   = request.GET.get('pizza_id')
+            time_delta = request.GET.get('time_delta')
 
-        ranking_list = get_user_list(pizza_id, time_delta)
-        ordered_table = get_ranking(ranking_list, order_by)
+            ranking_list = get_user_list(pizza_id, time_delta)
+            ordered_table = get_ranking(ranking_list, order_by)
 
-        selected_user = ordered_table[ordered_table['id'] == user_id]
+            selected_user = ordered_table[ordered_table['id'] == user_id]
 
-        user_info = selected_user[[
-            'id',
-            'name',
-            'image',
-            'store_id',
-            'total_score',
-            'total_count',
-            'shortest_time',
-            'average_time',
-            'completion_score',
-            'average_quality',
-            'average_sauce',
-            'average_cheese',
-            'average_topping',
-            'completion_standard',
-            'time_standard',
-            'count_standard',
-            'total_score_rank',
-            'total_count_rank',
-            'completion_score_rank',
-            'average_time_rank',
-            'shortest_time_rank'
-        ]].to_dict('records')[0]
+            user_info = selected_user[[
+                'id',
+                'name',
+                'image',
+                'store_id',
+                'total_score',
+                'total_count',
+                'shortest_time',
+                'average_time',
+                'completion_score',
+                'average_quality',
+                'average_sauce',
+                'average_cheese',
+                'average_topping',
+                'completion_standard',
+                'time_standard',
+                'count_standard',
+                'total_score_rank',
+                'total_count_rank',
+                'completion_score_rank',
+                'average_time_rank',
+                'shortest_time_rank'
+            ]].to_dict('records')[0]
 
-        user_info['store_name'] = ranking_list.get(id = user_id).store.name
+            user_info['store_name'] = ranking_list.get(id = user_id).store.name
 
-        return JsonResponse({'user_info' : user_info}, status = 200)
+            return JsonResponse({"user_info" : user_info}, status = 200)
+
+        except IndexError:
+            return JsonResponse({"message" : "SCORE_DOES_NOT_EXIST"}, status = 400)
 
 class StoreScoreView(View):
     def get(self, request, store_id):
-        order_by   = request.GET.get('order_by', 'total_score')
-        pizza_id   = request.GET.get('pizza_id')
-        time_delta = request.GET.get('time_delta')
+        try:
+            order_by   = request.GET.get('order_by', 'total_score')
+            pizza_id   = request.GET.get('pizza_id')
+            time_delta = request.GET.get('time_delta')
 
-        ranking_list = get_store_list(pizza_id, time_delta)
-        ordered_table = get_ranking(ranking_list, order_by)
+            ranking_list = get_store_list(pizza_id, time_delta)
+            ordered_table = get_ranking(ranking_list, order_by)
 
-        selected_store = ordered_table[ordered_table['id'] == store_id]
+            selected_store = ordered_table[ordered_table['id'] == store_id]
 
-        store_info = selected_store[[
-            'id',
-            'name',
-            'total_score',
-            'total_count',
-            'shortest_time',
-            'average_time',
-            'completion_score',
-            'average_quality',
-            'average_sauce',
-            'average_cheese',
-            'average_topping',
-            'completion_standard',
-            'time_standard',
-            'count_standard',
-            'total_score_rank',
-            'total_count_rank',
-            'completion_score_rank',
-            'average_time_rank',
-            'shortest_time_rank'
-        ]].to_dict('records')[0]
+            store_info = selected_store[[
+                'id',
+                'name',
+                'total_score',
+                'total_count',
+                'shortest_time',
+                'average_time',
+                'completion_score',
+                'average_quality',
+                'average_sauce',
+                'average_cheese',
+                'average_topping',
+                'completion_standard',
+                'time_standard',
+                'count_standard',
+                'total_score_rank',
+                'total_count_rank',
+                'completion_score_rank',
+                'average_time_rank',
+                'shortest_time_rank'
+            ]].to_dict('records')[0]
 
-        return JsonResponse({'store_info' : store_info}, status = 200)
+            return JsonResponse({'store_info' : store_info}, status = 200)
+
+        except IndexError:
+            return JsonResponse({"message" : "SCORE_DOES_NOT_EXIST"}, status = 400)
