@@ -221,6 +221,12 @@ class CheckPasswordView(View):
 class UserDeleteView(View):
     @login_required
     def delete(self, request, user_id):
+        grade_id = request.user.grade_id
+
+        if grade_id == 3:
+            User.objects.filter(id = user_id).update(is_approved = False)
+            return HttpResponse(status = 200)
+
         User.objects.get(id = user_id).delete()
 
         return HttpResponse(status = 200)
