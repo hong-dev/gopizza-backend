@@ -8,7 +8,6 @@ from django.http      import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.core.mail import EmailMessage
 
-
 class QuestListView(View):
     @login_required
     def get(self, request):
@@ -17,7 +16,7 @@ class QuestListView(View):
             .objects
             .select_related('quest')
             .filter(user_id = request.user.id)
-            .order_by('is_rewarded')
+            .order_by('is_rewarded', '-is_claimed')
             .values(
                 'is_achieved',
                 'is_claimed',
