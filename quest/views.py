@@ -8,6 +8,7 @@ from django.http      import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.core.mail import EmailMessage
 
+
 class QuestListView(View):
     @login_required
     def get(self, request):
@@ -16,6 +17,7 @@ class QuestListView(View):
             .objects
             .select_related('quest')
             .filter(user_id = request.user.id)
+            .order_by('is_rewarded')
             .values(
                 'is_achieved',
                 'is_claimed',
@@ -197,7 +199,7 @@ class RewardAprrovalView(View):
 
                 return JsonResponse({"coupon" : user_quest.quest.reward}, status = 200)
 
-            return JsonResponse({"ERROR" : "IS_NOT_CLAIMED"}, status = 400) 
+            return JsonResponse({"ERROR" : "IS_NOT_CLAIMED"}, status = 400)
 
         return JsonResponse({"message" : "Access Denied"}, status = 403)
 
