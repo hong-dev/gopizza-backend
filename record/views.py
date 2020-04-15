@@ -8,7 +8,7 @@ from store.models import Store
 from datetime              import datetime, timedelta, date
 from django.views          import View
 from django.http           import HttpResponse, JsonResponse
-from django.db.models      import Sum, Avg, Min, Count
+from django.db.models      import Sum, Avg, Min, Count, F
 from sklearn.preprocessing import MinMaxScaler
 
 class PizzaView(View):
@@ -85,14 +85,14 @@ def get_store_list(pizza_id, time_delta):
             average_quality  = Avg('score__quality'),
             average_sauce    = Avg('score__sauce'),
             average_cheese   = Avg('score__cheese'),
-            average_topping  = Avg('score__topping'),
-            completion_score = sum(
-                [
-                    Avg('score__quality'),
-                    Avg('score__sauce'),
-                    Avg('score__cheese'),
-                    Avg('score__topping')
-                ]
+            average_topping  = Avg('score__topping')
+        )
+        .annotate(
+            completion_score = (
+                F('average_quality') +
+                F('average_sauce')   +
+                F('average_cheese')  +
+                F('average_topping')
             )
         )
     )
