@@ -261,11 +261,16 @@ class UserScoreView(View):
             return JsonResponse({"user_info" : user_info}, status = 200)
 
         except IndexError:
-            return JsonResponse({"user_info" : list(User
-                                                    .objects
-                                                    .filter(id = user_id)
-                                                    .values('id', 'image','store__name'))},
-                                status = 200)
+            user = User.objects.get(id = user_id)
+
+            user_info = {
+                    "id"         : user.id,
+                    "name"       : user.name,
+                    "image"      : user.image,
+                    "store_name" : user.store.name
+            }
+
+            return JsonResponse({"user_info" : user_info}, status = 200)
 
 class StoreScoreView(View):
     def get(self, request, store_id):
