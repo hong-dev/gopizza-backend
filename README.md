@@ -6,9 +6,10 @@ GOPIZZA 구성원의 동기부여를 위한 리워드보드 제작 프로젝트
 - 구성 : 프론트엔드 4명, 백엔드 2명 (총 6명)
 - [백엔드 깃헙주소](https://github.com/hong-dev/wepizza-backend)
 - [프론트엔드 깃헙주소](https://github.com/akiakma/gopizza)
+- [Notion 프로젝트 소개](https://www.notion.so/WEPIZZA-9743969176cc4802b259b7c40f1a087a)
 
 # Demo
-[![Wepizza Project Demo](https://user-images.githubusercontent.com/53142539/79748620-b3769b00-8348-11ea-9266-4b56ddaa95e0.png)](https://youtu.be/RD1Ucct_ahg)
+[![Wepizza Project Demo](https://user-images.githubusercontent.com/53142539/79748620-b3769b00-8348-11ea-9266-4b56ddaa95e0.png)](https://www.youtube.com/watch?v=QjHWQUH4pDM&t=148s)
 
 # DB modeling
 [![](https://images.velog.io/images/k904808/post/7075edfc-b073-4602-9102-816cd533cb08/image.png)](https://aquerytool.com:443/aquerymain/index/?rurl=4f526639-8448-4975-801c-848ca8c62a2c)
